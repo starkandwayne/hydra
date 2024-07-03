@@ -1,4 +1,4 @@
-FROM golang
+FROM golang:1.22.4
 
 RUN mkdir -p $GOPATH/src/github.com/nxadm/tail/
 ADD . $GOPATH/src/github.com/nxadm/tail/
