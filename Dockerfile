@@ -1,9 +1,9 @@
-FROM golang:1.16-stretch as build
+FROM golang:1.21-bookworm as build
 
 RUN apt-get update \
  && apt-get install -y bzip2 gzip unzip curl openssh-client
 
-RUN curl -sLo /bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
+RUN curl -sLo /bin/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 \
  && chmod 0755 /bin/jq
 
 ARG VERSION
@@ -26,7 +26,7 @@ RUN mkdir -p /dist/bin /dist/plugins \
 ADD init /dist/init
 RUN chmod 0755 /dist/init/*
 
-FROM ubuntu:xenial-20210416
+FROM ubuntu:jammy
 RUN apt-get update \
  && apt-get install -y bzip2 gzip curl openssh-client \
  && rm -rf /var/lib/apt/lists/*

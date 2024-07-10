@@ -2,6 +2,7 @@ package vaultkv
 
 import (
 	"fmt"
+	"net/url"
 	"reflect"
 )
 
@@ -36,7 +37,9 @@ func (v *Client) Get(path string, output interface{}) error {
 func (v *Client) List(path string) ([]string, error) {
 	ret := []string{}
 
-	err := v.doRequest("LIST", path, nil, &vaultResponse{
+	query := url.Values{}
+	query.Add("list", "true")
+	err := v.doRequest("GET", path, query, &vaultResponse{
 		Data: &struct {
 			Keys *[]string `json:"keys"`
 		}{

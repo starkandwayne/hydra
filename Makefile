@@ -140,31 +140,31 @@ release:
 
 docker: docker-shield docker-webdav docker-demo
 docker-shield:
-	docker build -t shieldproject/shield:$(DOCKER_TAG) . --build-arg VERSION=$(DOCKER_TAG)
+	docker build -t quay.io/shieldproject/shield:$(DOCKER_TAG) . --build-arg VERSION=$(DOCKER_TAG)
 docker-webdav:
-	docker build -t shieldproject/webdav:$(DOCKER_TAG) docker/webdav
+	docker build -t quay.io/shieldproject/webdav:$(DOCKER_TAG) docker/webdav
 docker-demo:
-	docker build -t shieldproject/demo:$(DOCKER_TAG) docker/demo
+	docker build -t quay.io/shieldproject/demo:$(DOCKER_TAG) docker/demo
 
 docker-edge:
 	@echo "Checking that VERSION was defined in the calling environment"
 	@test -n "$(VERSION)"
 	@echo "OK.  VERSION=$(VERSION)"
 	
-	docker build -t shieldproject/shield:$(EDGE) . --build-arg VERSION=$(VERSION)
-	docker push shieldproject/shield:$(EDGE)
+	docker build -t quay.io/shieldproject/shield:$(EDGE) . --build-arg VERSION=$(VERSION)
+	docker push quay.io/shieldproject/shield:$(EDGE)
 
 docker-release:
 	@echo "Checking that VERSION was defined in the calling environment"
 	@test -n "$(VERSION)"
 	@echo "OK.  VERSION=$(VERSION)"
 	
-	docker build -t shieldproject/shield:$(VERSION) . --build-arg VERSION=$(VERSION)
-	docker build -t shieldproject/webdav:$(VERSION) docker/webdav
-	docker build -t shieldproject/demo:$(VERSION) docker/demo
-	docker run --rm shieldproject/shield:$(VERSION) /shield/bin/shieldd --version
+	docker build -t quay.io/shieldproject/shield:$(VERSION) . --build-arg VERSION=$(VERSION)
+	docker build -t quay.io/shieldproject/webdav:$(VERSION) docker/webdav
+	docker build -t quay.io/shieldproject/demo:$(VERSION) docker/demo
+	docker run --rm quay.io/shieldproject/shield:$(VERSION) /shield/bin/shieldd --version
 	
-	for I in shieldproject/shield shieldproject/webdav shieldproject/demo; do \
+	for I in quay.io/shieldproject/shield quay.io/shieldproject/webdav quay.io/shieldproject/demo; do \
 		docker tag $$I:$(VERSION) $$I:latest; \
 		docker push $$I:latest; \
 		for V in $(VERSION) $(shell echo "$(VERSION)" | sed -e 's/\.[^.]*$$//') $(shell echo "$(VERSION)" | sed -e 's/\..*$$//'); do \

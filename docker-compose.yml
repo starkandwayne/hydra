@@ -1,7 +1,7 @@
 version: '3'
 services:
   vault:
-    image: vault:1.0.2
+    image: hashicorp/vault:1.14
     ports: [8200]
     networks: [internal]
     environment:
@@ -36,7 +36,7 @@ services:
   core:
     depends_on:
       - vault
-    image: 'shieldproject/shield:8'
+    image: 'quay.io/shieldproject/shield:8'
     ports: ['9009:80']
     networks: [internal]
     command: ['/shield/init/core']
@@ -51,7 +51,7 @@ services:
     depends_on:
       - core
       - webdav
-    image: 'shieldproject/demo:latest'
+    image: 'quay.io/shieldproject/demo:latest'
     ports: ['9008:80']
     networks: [internal]
     volumes:
@@ -61,7 +61,7 @@ services:
     depends_on:
       - core
       - webdav
-    image: 'shieldproject/shield:8'
+    image: 'quay.io/shieldproject/shield:8'
     ports: [5444]
     networks: [internal]
     command: ['/shield/init/agent']
@@ -74,7 +74,7 @@ services:
       - 'demo-data:/www'
 
   webdav:
-    image: 'shieldproject/webdav:latest'
+    image: 'quay.io/shieldproject/webdav:latest'
     ports: ['9007:80']
     networks: [internal]
     environment:
