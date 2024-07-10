@@ -178,7 +178,9 @@ func (c *Client) V2List(mount, subpath string) ([]string, error) {
 	ret := []string{}
 	path := fmt.Sprintf("%s/metadata/%s", strings.Trim(mount, "/"), strings.Trim(subpath, "/"))
 
-	err := c.doRequest("LIST", path, nil, &vaultResponse{
+	query := url.Values{}
+	query.Add("list", "true")
+	err := c.doRequest("GET", path, query, &vaultResponse{
 		Data: &struct {
 			Keys *[]string `json:"keys"`
 		}{

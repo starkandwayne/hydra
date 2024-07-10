@@ -3,6 +3,7 @@ package vaultkv
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -32,6 +33,7 @@ type AuthOutput struct {
 
 type authOutputRaw struct {
 	Renewable     bool `json:"renewable"`
+	Data map[string]interface{} `json:"data"`
 	LeaseDuration int  `json:"lease_duration"`
 	Auth          struct {
 		ClientToken   string                 `json:"client_token"`
@@ -87,15 +89,28 @@ type AuthGithubMetadata struct {
 	Organization string `json:"org"`
 }
 
-//AuthGithub submits the given accessToken to the github auth endpoint, checking
-// it against configurations for Github organizations. If the accessToken
-// belongs to an authorized account, then the AuthOutput object is returned, and
-// this client's AuthToken is set to the returned token.
+//AuthGithub is a shorthand for AuthGithubMount against the default github auth
+//mountpoint, 'github'
 func (v *Client) AuthGithub(accessToken string) (ret *AuthOutput, err error) {
+	return v.AuthGithubMount("github", accessToken)
+}
+
+//AuthGithubMount submits the given accessToken to the github auth endpoint at
+//the given mount, checking it against configurations for Github organizations.
+//If the accessToken belongs to an authorized account, then the AuthOutput
+//object is returned, and this client's AuthToken is set to the returned token.
+//Given mountpoint is relative to /v1/auth.
+func (v *Client) AuthGithubMount(mount, accessToken string) (ret *AuthOutput, err error) {
 	raw := &authOutputRaw{}
+
+	mount = strings.Trim(mount, "/")
+	if mount == "" {
+		return nil, fmt.Errorf("no mountpoint given")
+	}
+
 	err = v.doRequest(
 		"POST",
-		"/auth/github/login",
+		fmt.Sprintf("/auth/%s/login", mount),
 		struct {
 			Token string `json:"token"`
 		}{Token: accessToken},
@@ -110,20 +125,76 @@ func (v *Client) AuthGithub(accessToken string) (ret *AuthOutput, err error) {
 	return
 }
 
+//AuthOktaMetadata is the metadata member set by AuthOkta
+type AuthOktaMetadata struct {
+	Username string `json:"username"`
+}
+
+//AuthOkta is a shorthand for AuthOktaMount against the default Okta mountpoint,
+//'okta'.
+func (v *Client) AuthOkta(username, password string) (ret *AuthOutput, err error) {
+	return v.AuthOktaMount("okta", username, password)
+}
+
+//AuthOktaMount submits the given username and password to the Okta auth endpoint
+//mounted at the given mountpoint, checking it against existing Okta auth
+//configurations. If auth is successful, then the AuthOutput object is returned,
+//and this client's AuthToken is set to the returned token. Given mountpoint is
+//relative to /v1/auth.
+func (v *Client) AuthOktaMount(mount, username, password string) (ret *AuthOutput, err error) {
+	raw := &authOutputRaw{}
+
+	mount = strings.Trim(mount, "/")
+	if mount == "" {
+		return nil, fmt.Errorf("no mountpoint given")
+	}
+
+	err = v.doRequest(
+		"POST",
+		fmt.Sprintf("/auth/%s/login/%s", mount, username),
+		struct {
+			Password string `json:"password"`
+		}{Password: password},
+		&raw,
+	)
+	fmt.Sprintf("%s", err)
+	if err != nil {
+		return
+	}
+
+	ret = raw.toFinal(AuthOktaMetadata{})
+	v.AuthToken = ret.ClientToken
+
+	return
+}
+
 //AuthLDAPMetadata is the metadata member set by AuthLDAP
 type AuthLDAPMetadata struct {
 	Username string `json:"username"`
 }
 
-//AuthLDAP submits the given username and password to the LDAP auth endpoint,
-//checking it against existing LDAP auth configurations. If auth is successful,
-//then the AuthOutput object is returned, and this client's AuthToken is set to
-//the returned token.
+//AuthLDAP is a shorthand for AuthLDAPMount against the default LDAP mountpoint,
+//'ldap'.
 func (v *Client) AuthLDAP(username, password string) (ret *AuthOutput, err error) {
+	return v.AuthLDAPMount("ldap", username, password)
+}
+
+//AuthLDAPMount submits the given username and password to the LDAP auth endpoint
+//mounted at the given mountpoint, checking it against existing LDAP auth
+//configurations. If auth is successful, then the AuthOutput object is returned,
+//and this client's AuthToken is set to the returned token. Given mountpoint is
+//relative to /v1/auth.
+func (v *Client) AuthLDAPMount(mount, username, password string) (ret *AuthOutput, err error) {
 	raw := &authOutputRaw{}
+
+	mount = strings.Trim(mount, "/")
+	if mount == "" {
+		return nil, fmt.Errorf("no mountpoint given")
+	}
+
 	err = v.doRequest(
 		"POST",
-		fmt.Sprintf("/auth/ldap/login/%s", username),
+		fmt.Sprintf("/auth/%s/login/%s", mount, username),
 		struct {
 			Password string `json:"password"`
 		}{Password: password},
@@ -144,14 +215,27 @@ type AuthUserpassMetadata struct {
 	Username string `json:"username"`
 }
 
-//AuthUserpass submits the given username and password to the userpass auth
-//endpoint. If a username with that password exists, then the AuthOutput object
-//is returned, and this client's AuthToken is set to the returned token.
+//AuthUserpass is a shorthand for AuthUserpassMount for the default userpass
+// mount point, 'userpass'.
 func (v *Client) AuthUserpass(username, password string) (ret *AuthOutput, err error) {
+	return v.AuthUserpassMount("userpass", username, password)
+}
+
+//AuthUserpass submits the given username and password to the userpass auth
+//endpoint located at the given mount. If a username with that password exists,
+//then the AuthOutput object is returned, and this client's AuthToken is set to
+//the returned token. Given mountpoint is relative to /v1/auth.
+func (v *Client) AuthUserpassMount(mount, username, password string) (ret *AuthOutput, err error) {
 	raw := &authOutputRaw{}
+
+	mount = strings.Trim(mount, "/")
+	if mount == "" {
+		return nil, fmt.Errorf("no mountpoint given")
+	}
+
 	err = v.doRequest(
 		"POST",
-		fmt.Sprintf("/auth/userpass/login/%s", username),
+		fmt.Sprintf("/auth/%s/login/%s", mount, username),
 		struct {
 			Password string `json:"password"`
 		}{Password: password},
@@ -167,14 +251,27 @@ func (v *Client) AuthUserpass(username, password string) (ret *AuthOutput, err e
 	return
 }
 
-//AuthApprole performs auth against the /auth/approle mount with the given
+//AuthApprole performs auth against the given approle mount with the given
+// approle ID and secret. If the login is successful, this client's AuthToken is
+// set to the returned token. Given mountpoint is relative to /v1/auth.
+func (v *Client) AuthApprole(roleID, secretID string) (ret *AuthOutput, err error) {
+	return v.AuthApproleMount("approle", roleID, secretID)
+}
+
+//AuthApproleMount performs auth against the given approle mount with the given
 // approle ID and secret. If the login is successful, this client's AuthToken is
 // set to the returned token.
-func (v *Client) AuthApprole(roleID, secretID string) (ret *AuthOutput, err error) {
+func (v *Client) AuthApproleMount(mount, roleID, secretID string) (ret *AuthOutput, err error) {
 	raw := &authOutputRaw{}
+
+	mount = strings.Trim(mount, "/")
+	if mount == "" {
+		return nil, fmt.Errorf("no mountpoint given")
+	}
+
 	err = v.doRequest(
 		"POST",
-		"/auth/approle/login",
+		fmt.Sprintf("/auth/%s/login", mount),
 		struct {
 			RoleID   string `json:"role_id"`
 			SecretID string `json:"secret_id"`
