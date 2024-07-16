@@ -23,17 +23,17 @@ meta:
     secret_key: ((cloudfoundry-community-aws.secret_access_key))
 
   git:
-    email: ((github.email))
-    name:  ((github.name))
+    email: ((cloudfoundry-community-ci-bot-github.email))
+    name:  ((cloudfoundry-community-ci-bot-github.name))
 
   github:
     owner:           shieldproject
     repo:            shield
     branch:          develop
     main-branch:     main
-    private_key:     ((github.private_key))
-    access_token:    ((github.access_token))
-    access_token_rw: ((github.access_token_rw))
+    private_key:     ((cloudfoundry-community-ci-bot-github.private_key))
+    access_token:    ((cloudfoundry-community-ci-bot-github.access_token))
+    access_token_rw: ((cloudfoundry-community-ci-bot-github.access_token_rw))
 
   shout:
     url:      ((shout.url))
