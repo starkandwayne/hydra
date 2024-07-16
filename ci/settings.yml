@@ -35,6 +35,9 @@ meta:
     access_token:    ((cloudfoundry-community-ci-bot-github.access_token))
     access_token_rw: ((cloudfoundry-community-ci-bot-github.access_token_rw))
 
+  slack:
+    webhook: ((slack.webhook))
+
   shout:
     url:      ((shout.url))
     username: ((shout.username))
