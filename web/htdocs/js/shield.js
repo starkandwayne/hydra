@@ -474,6 +474,43 @@ function dispatch(page) {
 
     break; /* #!/stores/edit */
     // }}}
+  case '#!/stores/test': /* {{{ */
+    if (!AEGIS.current) {
+      $('#main').template('you-have-no-tenants');
+      break;
+    }
+    api({
+        type: 'GET',
+        url:  '/v2/tenants/'+AEGIS.current.uuid+'/stores/'+args.uuid,
+        error: "Failed to retrieve storage system information from the SHIELD API.",
+        success: function (store) {
+          modal($($.template('stores-test', { store: store }))
+            .on('click', '[rel="yes"]', function (event) {
+              event.preventDefault();
+              api({
+                type: 'POST',
+                url:  '/v2/tenants/'+AEGIS.current.uuid+'/stores/'+args.uuid+'/test',
+                complete: function () {
+                modal(true);
+                },
+                success: function (event) {
+                  goto('#!/stores/store:uuid:');
+                  banner('Started storage health check.');
+                },
+                error: function (event) {
+                  banner('Unable to test the storage system');
+                }
+              });
+            })
+            .on('click', '[rel="close"]', function (event) {
+            modal(true);
+            goto('#!/stores/store:uuid:'+args.uuid);
+            })
+          );
+        }
+    });
+    break; /* #!/stores/test */
+    // // }}}  
   case '#!/stores/delete': /* {{{ */
     if (!AEGIS.current) {
       $('#main').template('you-have-no-tenants');

@@ -2610,6 +2610,33 @@ func (c *Core) v2API() *route.Router {
 
 		r.OK(store)
 	})
+	r.Dispatch("POST /v2/tenants/:uuid/stores/:uuid/test", func(r *route.Request) { // {{{
+		// if c.IsNotTenantOperator(r, r.Args[1]) {
+		// 	return
+		// }
+
+		store, err := c.db.GetStore(r.Args[2])
+		if err != nil {
+			r.Fail(route.Oops(err, "Unable to retrieve storage system information"))
+			return
+		}
+
+		if store == nil || store.TenantUUID != r.Args[1] {
+			r.Fail(route.NotFound(nil, "No such store"))
+			return
+		}
+
+		// if _, err = c.db.PauseJob(job.UUID); err != nil {
+		// 	r.Fail(route.Oops(err, "Unable to pause job"))
+		// 	return
+		// }
+		if _, err := c.db.CreateTestStoreTask("system", store); err != nil {
+			log.Errorf("failed to schedule storage test task (non-critical) for %s (%s): %s",
+						store.Name, store.UUID, err)
+		}
+
+		r.Success("Testing store")
+	})
 	// }}}
 	r.Dispatch("DELETE /v2/tenants/:uuid/stores/:uuid", func(r *route.Request) { // {{{
 		if c.IsNotTenantEngineer(r, r.Args[1]) {

@@ -19,6 +19,7 @@ system engineer #!/admin/stores/store
 system engineer #!/admin/stores/new
 system engineer #!/admin/stores/edit
 system engineer #!/admin/stores/delete
+system engineer #!/admin/stores/test
 
 system engineer #!/admin/policies
 system engineer #!/admin/policies/store
@@ -39,6 +40,7 @@ tenant operator #!/stores/store
 tenant engineer #!/stores/new
 tenant engineer #!/stores/edit
 tenant engineer #!/stores/delete
+tenant engineer #!/stores/test
 
 tenant operator #!/policies
 tenant operator #!/policies/store

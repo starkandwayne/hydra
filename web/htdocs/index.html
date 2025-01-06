@@ -2524,6 +2524,7 @@ for job <em>[[= _.task.job_uuid ]]</em>
                   || (!_.admin && AEGIS.is(store.tenant_uuid, 'engineer'))) { ]]
               <a class="edit"   href="#!/[[= _.admin ? 'admin/' : '' ]]stores/edit:uuid:[[= store.uuid ]]">Edit</a>
               <a class="delete" href="#!/[[= _.admin ? 'admin/' : '' ]]stores/delete:uuid:[[= store.uuid ]]">Delete</a>
+              <a class="edit" href="#!/[[= _.admin ? 'admin/' : '' ]]stores/test:uuid:[[= store.uuid ]]">Test</a>
               [[ } ]]
             [[ } ]]
 
@@ -2780,7 +2781,27 @@ for job <em>[[= _.task.job_uuid ]]</em>
               <button class="danger" rel="yes">Yes, Delete It</button>
             </div>
           </div>
-    <!-- }}} --></script>
+    <!-- }}} --></script><script type="text/html" id="template:stores-test"><!-- {{{ -->
+      [[#
+      {stores-test}
+
+      A modal interaction screen that requires the operator to acknowledge
+      that what they are about to do is in fact to test a storage system, that it
+      might be dangerous, and it might not work out.
+    ]]
+        <div class="confirm">
+          <h2>Test The <em>[[= h(_.store.name) ]]</em> Cloud Storage System?</h2>
+          <p>You have requested that SHIELD perform a health check for
+            the cloud storage system "[[= h(_.store.name) ]]"</p>
+
+          <p class="q">Are you sure you want to test <em>[[= h(_.store.name) ]]</em>?</p>
+
+          <div class="a">
+            <button class="closes danger" rel="close">No, Cancel This Operation</button>
+            <button class="closes safe" rel="yes">Yes, Initiate Test</button>
+          </div>
+        </div>
+  <!-- }}} --></script>
 
     <script type="text/html" id="template:tenants"><!-- {{{ -->
       [[#
