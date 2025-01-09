@@ -185,6 +185,10 @@ EOF
 		exit 2
 	fi
 
+	# Add a delay to account for eventual consistency
+	say "waiting 5 seconds to account for storage consistency..."
+	sleep 5
+
 	output=$(${SHIELD_STORE_PLUGIN} retrieve -e "${SHIELD_STORE_ENDPOINT}" -k "${key}"        || true)
 	${SHIELD_STORE_PLUGIN} purge -e "${SHIELD_STORE_ENDPOINT}" -k "${key}" || true
 
